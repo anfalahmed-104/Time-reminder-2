@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="TimeFlow - Smart Timetable Management App">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TimeFlow">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230f766e' width='180' height='180' rx='40'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='90' fill='white'>📅</text></svg>">
+    <title>TimeFlow - Smart Timetable App</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #fafaf9;
+            --bg-secondary: #ffffff;
+            --bg-accent: #f5f3f0;
+            --text-primary: #1c1917;
+            --text-secondary: #57534e;
+            --text-muted: #a8a29e;
+            --border: #e7e5e4;
+            --accent: #0f766e;
+            --accent-hover: #0d9488;
+            --success: #15803d;
+            --danger: #dc2626;
+            --warning: #ea580c;
+            --missed: #fef2f2;
+            --completed: #f0fdf4;
+            --shadow: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0c0a09;
+            --bg-secondary: #1c1917;
+            --bg-accent: #292524;
+            --text-primary: #fafaf9;
+            --text-secondary: #d6d3d1;
+            --text-muted: #78716c;
+            --border: #292524;
+            --accent: #14b8a6;
+            --accent-hover: #2dd4bf;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f97316;
+            --missed: #450a0a;
+            --completed: #052e16;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Work Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border);
+            padding: 24px 32px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .header-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 32px;
+            font-weight: 400;
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .theme-toggle, .settings-btn {
+            background: var(--bg-accent);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover, .settings-btn:hover {
+            background: var(--accent);
+            transform: scale(1.05);
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--bg-secondary);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tab.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: var(--bg-accent);
+        }
+
+        /* Today's Overview */
+        .today-overview {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 32px;
+            color: white;
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .today-date {
+            font-family: 'DM Serif Display', serif;
+            font-size: 28px;
+            margin-bottom: 16px;
+            opacity: 0.95;
+        }
+
+        .progress-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .progress-circle {
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .progress-stats {
+            flex: 1;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        /* Timetable */
+        .timetable-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px var(--shadow);
+            overflow-x: auto;
+        }
+
+        .timetable-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .timetable-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 24px;
+            color: var(--text-primary);
+        }
+
+        .timetable-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-accent);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            font-size: 18px;
+        }
+
+        /* Task Table */
+        .task-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+        }
+
+        .task-table th,
+        .task-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .task-table th {
+            background: var(--bg-accent);
+            font-weight: 600;
+            color: var(--text-primary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .task-table tr:hover td {
+            background: var(--bg-accent);
+        }
+
+        .task-row.completed td {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .task-row.missed td {
+            background: var(--missed);
+        }
+
+        .checkbox-cell {
+            width: 50px;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .task-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .task-time {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .task-duration {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--bg-accent);
+            border-radius: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .task-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: var(--bg-accent);
+            color: var(--text-secondary);
+        }
+
+        .status-missed {
+            background: var(--danger);
+            color: white;
+        }
+
+        .status-completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            font-family: 'DM Serif Display', serif;
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        /* Weekly Template */
+        .day-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .day-tab {
+            padding: 10px 20px;
+            background: var(--bg-accent);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .day-tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .day-tab:hover:not(.active) {
+            background: var(--border);
+        }
+
+        /* Weekly Progress */
+        .weekly-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .day-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.2s ease;
+        }
+
+        .day-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .day-name {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .day-percentage {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .day-tasks {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Monthly Progress */
+        .monthly-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .month-day {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .month-day:hover {
+            transform: scale(1.05);
+        }
+
+        .month-day-number {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .month-day-percentage {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .percentage-high {
+            color: var(--success);
+        }
+
+        .percentage-medium {
+            color: var(--warning);
+        }
+
+        .percentage-low {
+            color: var(--danger);
+        }
+
+        /* Widget Simulation */
+        .widget-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px var(--shadow);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .widget-header {
+            font-family: 'DM Serif Display', serif;
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+
+        .widget-task {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--bg-accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .widget-task:hover {
+            background: var(--border);
+            transform: translateX(4px);
+        }
+
+        .widget-percentage {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border);
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Settings Panel */
+        .settings-section {
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+        }
+
+        .settings-section-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--bg-accent);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .settings-option-info {
+            flex: 1;
+        }
+
+        .settings-option-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .settings-option-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .file-label:hover {
+            background: var(--accent-hover);
+        }
+
+        .sound-preview {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 18px;
+            margin-bottom: 24px;
+        }
+
+        /* Install Prompt */
+        .install-prompt {
+            background: var(--accent);
+            color: white;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+        }
+
+        .install-text {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        /* Notification Permission */
+        .notification-banner {
+            background: var(--warning);
+            color: white;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+        }
+
+        .notification-text {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .progress-section {
+                flex-direction: column;
+            }
+
+            .weekly-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .nav-tabs {
+                flex-wrap: nowrap;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .modal {
+                width: 95%;
+                padding: 24px;
+            }
+
+            .day-tabs {
+                flex-wrap: nowrap;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+        // Utility Functions
+        const getCurrentTime = () => new Date();
+        
+        const formatTime = (date) => {
+            return date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        };
+
+        const formatDate = (date) => {
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        };
+
+        const getDateKey = (date) => {
+            return date.toISOString().split('T')[0];
+        };
+
+        const getDayOfWeek = (date) => {
+            const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            return days[date.getDay()];
+        };
+
+        const parseTime = (timeString) => {
+            const [time, period] = timeString.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+            
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            
+            return { hours, minutes };
+        };
+
+        const isTaskMissed = (task, currentTime) => {
+            if (task.completed) return false;
+            
+            const taskEnd = new Date(currentTime);
+            const { hours, minutes } = parseTime(task.endTime);
+            taskEnd.setHours(hours, minutes, 0, 0);
+            
+            return currentTime > taskEnd;
+        };
+
+        const calculateProgress = (tasks) => {
+            if (tasks.length === 0) return 0;
+            const completed = tasks.filter(t => t.completed).length;
+            return Math.round((completed / tasks.length) * 100);
+        };
+
+        // Local Storage Helper
+        const StorageHelper = {
+            save: (key, data) => {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (e) {
+                    console.error('Error saving to localStorage:', e);
+                }
+            },
+            load: (key, defaultValue = null) => {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch (e) {
+                    console.error('Error loading from localStorage:', e);
+                    return defaultValue;
+                }
+            }
+        };
+
+        // Audio Helper for file uploads
+        const AudioHelper = {
+            saveAudio: (file, key) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            localStorage.setItem(key, e.target.result);
+                            resolve(e.target.result);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            },
+            getAudio: (key) => {
+                return localStorage.getItem(key);
+            },
+            playAudio: (audioData) => {
+                if (audioData) {
+                    const audio = new Audio(audioData);
+                    audio.play().catch(e => console.log('Audio play failed:', e));
+                }
+            }
+        };
+
+        // Notification Helper
+        const NotificationHelper = {
+            requestPermission: async () => {
+                if ('Notification' in window && Notification.permission === 'default') {
+                    return await Notification.requestPermission();
+                }
+                return Notification.permission;
+            },
+            
+            scheduleNotification: (task, audioData) => {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    const now = new Date();
+                    const { hours, minutes } = parseTime(task.startTime);
+                    const taskTime = new Date(now);
+                    taskTime.setHours(hours, minutes, 0, 0);
+                    
+                    const delay = taskTime - now;
+                    
+                    if (delay > 0 && delay < 24 * 60 * 60 * 1000) { // Within 24 hours
+                        setTimeout(() => {
+                            const notification = new Notification('TimeFlow Reminder', {
+                                body: `Time for: ${task.name}`,
+                                icon: '📅',
+                                tag: task.id
+                            });
+                            
+                            if (audioData) {
+                                AudioHelper.playAudio(audioData);
+                            }
+                        }, delay);
+                    }
+                }
+            }
+        };
+
+        // Main App Component
+        function TimeTableApp() {
+            const [theme, setTheme] = useState(StorageHelper.load('theme', 'light'));
+            const [currentTab, setCurrentTab] = useState('today');
+            const [weeklyTemplate, setWeeklyTemplate] = useState(StorageHelper.load('weeklyTemplate', {}));
+            const [taskOverrides, setTaskOverrides] = useState(StorageHelper.load('taskOverrides', {}));
+            const [settings, setSettings] = useState(StorageHelper.load('settings', {
+                defaultSound: null,
+                soundEnabled: true
+            }));
+            const [showModal, setShowModal] = useState(false);
+            const [showTemplateModal, setShowTemplateModal] = useState(false);
+            const [showSettingsModal, setShowSettingsModal] = useState(false);
+            const [editingTask, setEditingTask] = useState(null);
+            const [currentTime, setCurrentTime] = useState(getCurrentTime());
+            const [deferredPrompt, setDeferredPrompt] = useState(null);
+            const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+            const [showNotificationBanner, setShowNotificationBanner] = useState(
+                'Notification' in window && Notification.permission === 'default'
+            );
+
+            const today = getDateKey(currentTime);
+            const dayOfWeek = getDayOfWeek(currentTime);
+
+            // Get tasks for today (from template + any overrides)
+            const getTodayTasks = useCallback(() => {
+                const templateTasks = weeklyTemplate[dayOfWeek] || [];
+                const overrides = taskOverrides[today] || {};
+                
+                return templateTasks.map(task => {
+                    const override = overrides[task.id];
+                    if (override) {
+                        return { ...task, ...override };
+                    }
+                    // Check if completed today
+                    const completionKey = `${today}-${task.id}`;
+                    const completed = StorageHelper.load(completionKey, false);
+                    return { ...task, completed };
+                });
+            }, [weeklyTemplate, dayOfWeek, taskOverrides, today]);
+
+            const todayTasks = getTodayTasks();
+
+            // Theme Effect
+            useEffect(() => {
+                document.documentElement.setAttribute('data-theme', theme);
+                StorageHelper.save('theme', theme);
+            }, [theme]);
+
+            // Save templates and overrides
+            useEffect(() => {
+                StorageHelper.save('weeklyTemplate', weeklyTemplate);
+            }, [weeklyTemplate]);
+
+            useEffect(() => {
+                StorageHelper.save('taskOverrides', taskOverrides);
+            }, [taskOverrides]);
+
+            useEffect(() => {
+                StorageHelper.save('settings', settings);
+            }, [settings]);
+
+            // Update current time every minute
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    setCurrentTime(getCurrentTime());
+                }, 60000);
+                return () => clearInterval(interval);
+            }, []);
+
+            // PWA Install Prompt
+            useEffect(() => {
+                const handler = (e) => {
+                    e.preventDefault();
+                    setDeferredPrompt(e);
+                    setShowInstallPrompt(true);
+                };
+                window.addEventListener('beforeinstallprompt', handler);
+                return () => window.removeEventListener('beforeinstallprompt', handler);
+            }, []);
+
+            // Schedule notifications for today's tasks
+            useEffect(() => {
+                todayTasks.forEach(task => {
+                    if (!task.completed) {
+                        const audioData = task.customSound || settings.defaultSound;
+                        if (settings.soundEnabled && audioData) {
+                            NotificationHelper.scheduleNotification(task, audioData);
+                        }
+                    }
+                });
+            }, [todayTasks, settings]);
+
+            const installApp = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    setDeferredPrompt(null);
+                    setShowInstallPrompt(false);
+                }
+            };
+
+            const toggleTask = (taskId) => {
+                const completionKey = `${today}-${taskId}`;
+                const currentState = StorageHelper.load(completionKey, false);
+                StorageHelper.save(completionKey, !currentState);
+                setCurrentTime(new Date()); // Trigger re-render
+            };
+
+            const updateTaskOverride = (taskId, updates) => {
+                const newOverrides = { ...taskOverrides };
+                if (!newOverrides[today]) newOverrides[today] = {};
+                newOverrides[today][taskId] = {
+                    ...newOverrides[today][taskId],
+                    ...updates
+                };
+                setTaskOverrides(newOverrides);
+            };
+
+            const requestNotifications = async () => {
+                const permission = await NotificationHelper.requestPermission();
+                if (permission === 'granted') {
+                    setShowNotificationBanner(false);
+                }
+            };
+
+            const progress = calculateProgress(todayTasks);
+            const completedCount = todayTasks.filter(t => t.completed).length;
+            const missedCount = todayTasks.filter(t => isTaskMissed(t, currentTime)).length;
+
+            return (
+                <div className="app-container">
+                    <header className="header">
+                        <h1 className="header-title">TimeFlow</h1>
+                        <div className="header-controls">
+                            <button 
+                                className="settings-btn"
+                                onClick={() => setShowSettingsModal(true)}
+                                title="Settings"
+                            >
+                                ⚙️
+                            </button>
+                            <button 
+                                className="theme-toggle"
+                                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                            >
+                                {theme === 'light' ? '🌙' : '☀️'}
+                            </button>
+                        </div>
+                    </header>
+
+                    {showInstallPrompt && (
+                        <div className="install-prompt">
+                            <span className="install-text">
+                                Install TimeFlow on your device for easy access!
+                            </span>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button 
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowInstallPrompt(false)}
+                                >
+                                    Later
+                                </button>
+                                <button 
+                                    className="btn btn-primary"
+                                    onClick={installApp}
+                                >
+                                    Install
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showNotificationBanner && (
+                        <div className="notification-banner">
+                            <span className="notification-text">
+                                Enable notifications to get reminders for your tasks
+                            </span>
+                            <button 
+                                className="btn btn-secondary"
+                                onClick={requestNotifications}
+                            >
+                                Enable
+                            </button>
+                        </div>
+                    )}
+
+                    <nav className="nav-tabs">
+                        <button 
+                            className={`nav-tab ${currentTab === 'today' ? 'active' : ''}`}
+                            onClick={() => setCurrentTab('today')}
+                        >
+                            Today
+                        </button>
+                        <button 
+                            className={`nav-tab ${currentTab === 'template' ? 'active' : ''}`}
+                            onClick={() => setCurrentTab('template')}
+                        >
+                            Weekly Template
+                        </button>
+                        <button 
+                            className={`nav-tab ${currentTab === 'weekly' ? 'active' : ''}`}
+                            onClick={() => setCurrentTab('weekly')}
+                        >
+                            Weekly Progress
+                        </button>
+                        <button 
+                            className={`nav-tab ${currentTab === 'monthly' ? 'active' : ''}`}
+                            onClick={() => setCurrentTab('monthly')}
+                        >
+                            Monthly
+                        </button>
+                        <button 
+                            className={`nav-tab ${currentTab === 'widget' ? 'active' : ''}`}
+                            onClick={() => setCurrentTab('widget')}
+                        >
+                            Widget Preview
+                        </button>
+                    </nav>
+
+                    {currentTab === 'today' && (
+                        <TodayView
+                            currentTime={currentTime}
+                            todayTasks={todayTasks}
+                            progress={progress}
+                            completedCount={completedCount}
+                            missedCount={missedCount}
+                            onToggleTask={toggleTask}
+                            onEditTask={(task) => {
+                                setEditingTask(task);
+                                setShowModal(true);
+                            }}
+                        />
+                    )}
+
+                    {currentTab === 'template' && (
+                        <WeeklyTemplateView
+                            weeklyTemplate={weeklyTemplate}
+                            setWeeklyTemplate={setWeeklyTemplate}
+                            settings={settings}
+                        />
+                    )}
+
+                    {currentTab === 'weekly' && (
+                        <WeeklyProgressView
+                            weeklyTemplate={weeklyTemplate}
+                            currentTime={currentTime}
+                        />
+                    )}
+
+                    {currentTab === 'monthly' && (
+                        <MonthlyView
+                            weeklyTemplate={weeklyTemplate}
+                            currentTime={currentTime}
+                        />
+                    )}
+
+                    {currentTab === 'widget' && (
+                        <WidgetView 
+                            tasks={todayTasks} 
+                            progress={progress}
+                            onToggleTask={toggleTask}
+                        />
+                    )}
+
+                    {showSettingsModal && (
+                        <SettingsModal
+                            settings={settings}
+                            setSettings={setSettings}
+                            onClose={() => setShowSettingsModal(false)}
+                        />
+                    )}
+                </div>
+            );
+        }
+
+        // Today View Component
+        function TodayView({ currentTime, todayTasks, progress, completedCount, missedCount, onToggleTask, onEditTask }) {
+            return (
+                <>
+                    <div className="today-overview">
+                        <div className="today-date">{formatDate(currentTime)}</div>
+                        <div className="progress-section">
+                            <div className="progress-circle">
+                                <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
+                                    <circle
+                                        cx="60"
+                                        cy="60"
+                                        r="54"
+                                        fill="none"
+                                        stroke="rgba(255,255,255,0.2)"
+                                        strokeWidth="12"
+                                    />
+                                    <circle
+                                        cx="60"
+                                        cy="60"
+                                        r="54"
+                                        fill="none"
+                                        stroke="white"
+                                        strokeWidth="12"
+                                        strokeDasharray={`${2 * Math.PI * 54}`}
+                                        strokeDashoffset={`${2 * Math.PI * 54 * (1 - progress / 100)}`}
+                                        strokeLinecap="round"
+                                        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                                    />
+                                </svg>
+                                <div className="progress-text">{progress}%</div>
+                            </div>
+                            <div className="progress-stats">
+                                <div className="stat-row">
+                                    <span>Total Tasks:</span>
+                                    <strong>{todayTasks.length}</strong>
+                                </div>
+                                <div className="stat-row">
+                                    <span>Completed:</span>
+                                    <strong>{completedCount}</strong>
+                                </div>
+                                <div className="stat-row">
+                                    <span>Remaining:</span>
+                                    <strong>{todayTasks.length - completedCount}</strong>
+                                </div>
+                                <div className="stat-row">
+                                    <span>Missed:</span>
+                                    <strong style={{ color: missedCount > 0 ? '#fca5a5' : 'inherit' }}>
+                                        {missedCount}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="timetable-container">
+                        <div className="timetable-header">
+                            <h2 className="timetable-title">Today's Schedule</h2>
+                        </div>
+
+                        {todayTasks.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">📅</div>
+                                <div className="empty-text">No tasks scheduled for today</div>
+                                <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                                    Set up your weekly template to see tasks here
+                                </div>
+                            </div>
+                        ) : (
+                            <table className="task-table">
+                                <thead>
+                                    <tr>
+                                        <th className="checkbox-cell"></th>
+                                        <th>Task</th>
+                                        <th>Time</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {todayTasks.map(task => {
+                                        const missed = isTaskMissed(task, currentTime);
+                                        return (
+                                            <tr 
+                                                key={task.id}
+                                                className={`task-row ${task.completed ? 'completed' : ''} ${missed ? 'missed' : ''}`}
+                                            >
+                                                <td className="checkbox-cell">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="checkbox"
+                                                        checked={task.completed}
+                                                        onChange={() => onToggleTask(task.id)}
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <div className="task-name">{task.name}</div>
+                                                </td>
+                                                <td>
+                                                    <div className="task-time">
+                                                        {task.startTime} - {task.endTime}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className="task-duration">{task.duration}</span>
+                                                </td>
+                                                <td>
+                                                    <span className={`task-status ${
+                                                        task.completed ? 'status-completed' :
+                                                        missed ? 'status-missed' :
+                                                        'status-pending'
+                                                    }`}>
+                                                        {task.completed ? 'Completed' :
+                                                         missed ? 'Missed' :
+                                                         'Pending'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </>
+            );
+        }
+
+        // Weekly Template View Component
+        function WeeklyTemplateView({ weeklyTemplate, setWeeklyTemplate, settings }) {
+            const [selectedDay, setSelectedDay] = useState('monday');
+            const [showTaskModal, setShowTaskModal] = useState(false);
+            const [editingTask, setEditingTask] = useState(null);
+
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const dayTasks = weeklyTemplate[selectedDay] || [];
+
+            const addOrUpdateTask = (task) => {
+                const newTemplate = { ...weeklyTemplate };
+                if (!newTemplate[selectedDay]) newTemplate[selectedDay] = [];
+                
+                if (editingTask) {
+                    const index = newTemplate[selectedDay].findIndex(t => t.id === editingTask.id);
+                    newTemplate[selectedDay][index] = { ...task, id: editingTask.id };
+                } else {
+                    newTemplate[selectedDay].push({
+                        ...task,
+                        id: `${selectedDay}-${Date.now()}`
+                    });
+                }
+                
+                setWeeklyTemplate(newTemplate);
+                setShowTaskModal(false);
+                setEditingTask(null);
+            };
+
+            const deleteTask = (taskId) => {
+                if (confirm('Delete this task from the weekly template?')) {
+                    const newTemplate = { ...weeklyTemplate };
+                    newTemplate[selectedDay] = newTemplate[selectedDay].filter(t => t.id !== taskId);
+                    setWeeklyTemplate(newTemplate);
+                }
+            };
+
+            const copyToOtherDays = () => {
+                if (dayTasks.length === 0) {
+                    alert('No tasks to copy! Add some tasks first.');
+                    return;
+                }
+                setShowCopyModal(true);
+            };
+
+            const [showCopyModal, setShowCopyModal] = useState(false);
+            
+            const handleCopyToDays = (selectedDays) => {
+                const newTemplate = { ...weeklyTemplate };
+                selectedDays.forEach(day => {
+                    newTemplate[day] = dayTasks.map(task => ({
+                        ...task,
+                        id: `${day}-${Date.now()}-${Math.random()}`
+                    }));
+                });
+                setWeeklyTemplate(newTemplate);
+                setShowCopyModal(false);
+            };
+
+            return (
+                <div className="timetable-container">
+                    <div className="timetable-header">
+                        <h2 className="timetable-title">Weekly Template</h2>
+                        <div className="timetable-actions">
+                            {dayTasks.length > 0 && (
+                                <button className="btn btn-secondary" onClick={copyToOtherDays}>
+                                    📋 Copy to Days...
+                                </button>
+                            )}
+                            <button className="btn btn-primary" onClick={() => setShowTaskModal(true)}>
+                                + Add Task
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="day-tabs">
+                        {days.map(day => (
+                            <button
+                                key={day}
+                                className={`day-tab ${selectedDay === day ? 'active' : ''}`}
+                                onClick={() => setSelectedDay(day)}
+                            >
+                                {day.charAt(0).toUpperCase() + day.slice(1)}
+                                {weeklyTemplate[day]?.length > 0 && ` (${weeklyTemplate[day].length})`}
+                            </button>
+                        ))}
+                    </div>
+
+                    {dayTasks.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-icon">📝</div>
+                            <div className="empty-text">No tasks for {selectedDay}</div>
+                            <button className="btn btn-primary" onClick={() => setShowTaskModal(true)}>
+                                Add First Task
+                            </button>
+                        </div>
+                    ) : (
+                        <table className="task-table">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Time</th>
+                                    <th>Duration</th>
+                                    <th>Sound</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dayTasks.map(task => (
+                                    <tr key={task.id}>
+                                        <td>
+                                            <div className="task-name">{task.name}</div>
+                                        </td>
+                                        <td>
+                                            <div className="task-time">
+                                                {task.startTime} - {task.endTime}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className="task-duration">{task.duration}</span>
+                                        </td>
+                                        <td>
+                                            {task.customSound ? '🔔 Custom' : settings.defaultSound ? '🔔 Default' : '🔕 None'}
+                                        </td>
+                                        <td>
+                                            <div className="task-actions">
+                                                <button 
+                                                    className="icon-btn"
+                                                    onClick={() => {
+                                                        setEditingTask(task);
+                                                        setShowTaskModal(true);
+                                                    }}
+                                                    title="Edit"
+                                                >
+                                                    ✏️
+                                                </button>
+                                                <button 
+                                                    className="icon-btn"
+                                                    onClick={() => deleteTask(task.id)}
+                                                    title="Delete"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+
+                    {showTaskModal && (
+                        <TaskModal
+                            task={editingTask}
+                            onSave={addOrUpdateTask}
+                            onClose={() => {
+                                setShowTaskModal(false);
+                                setEditingTask(null);
+                            }}
+                            settings={settings}
+                        />
+                    )}
+
+                    {showCopyModal && (
+                        <CopyToManyDaysModal
+                            currentDay={selectedDay}
+                            onCopy={handleCopyToDays}
+                            onClose={() => setShowCopyModal(false)}
+                        />
+                    )}
+                </div>
+            );
+        }
+
+        // Task Modal Component
+        function TaskModal({ task, onSave, onClose, settings }) {
+            const [formData, setFormData] = useState(task || {
+                name: '',
+                startTime: '09:00 AM',
+                endTime: '10:00 AM',
+                duration: '1 hour',
+                customSound: null
+            });
+            const fileInputRef = useRef(null);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSave(formData);
+            };
+
+            const handleChange = (field, value) => {
+                setFormData({ ...formData, [field]: value });
+            };
+
+            const handleSoundUpload = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    try {
+                        const audioData = await AudioHelper.saveAudio(file, `custom-sound-${Date.now()}`);
+                        handleChange('customSound', audioData);
+                    } catch (error) {
+                        alert('Error uploading sound file. Please try again.');
+                    }
+                }
+            };
+
+            const durations = [
+                '15 minutes',
+                '30 minutes',
+                '45 minutes',
+                '1 hour',
+                '1.5 hours',
+                '2 hours',
+                '3 hours',
+                '4 hours'
+            ];
+
+            const generateTimeOptions = () => {
+                const times = [];
+                for (let h = 0; h < 24; h++) {
+                    for (let m = 0; m < 60; m += 15) {
+                        const hour = h % 12 || 12;
+                        const period = h < 12 ? 'AM' : 'PM';
+                        const minute = m.toString().padStart(2, '0');
+                        times.push(`${hour}:${minute} ${period}`);
+                    }
+                }
+                return times;
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-header">
+                            {task ? 'Edit Task' : 'Add New Task'}
+                        </h2>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label className="form-label">Task Name *</label>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    value={formData.name}
+                                    onChange={(e) => handleChange('name', e.target.value)}
+                                    placeholder="e.g., Morning Workout"
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label className="form-label">Start Time *</label>
+                                    <select
+                                        className="form-select"
+                                        value={formData.startTime}
+                                        onChange={(e) => handleChange('startTime', e.target.value)}
+                                        required
+                                    >
+                                        {generateTimeOptions().map(time => (
+                                            <option key={time} value={time}>{time}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">End Time *</label>
+                                    <select
+                                        className="form-select"
+                                        value={formData.endTime}
+                                        onChange={(e) => handleChange('endTime', e.target.value)}
+                                        required
+                                    >
+                                        {generateTimeOptions().map(time => (
+                                            <option key={time} value={time}>{time}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Duration *</label>
+                                <select
+                                    className="form-select"
+                                    value={formData.duration}
+                                    onChange={(e) => handleChange('duration', e.target.value)}
+                                    required
+                                >
+                                    {durations.map(duration => (
+                                        <option key={duration} value={duration}>{duration}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Custom Notification Sound (Optional)</label>
+                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <div className="file-input-wrapper">
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="audio/*"
+                                            className="file-input"
+                                            onChange={handleSoundUpload}
+                                        />
+                                        <div className="file-label">
+                                            {formData.customSound ? '🔔 Change Sound' : '📁 Upload Sound'}
+                                        </div>
+                                    </div>
+                                    {formData.customSound && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary btn-icon"
+                                            onClick={() => AudioHelper.playAudio(formData.customSound)}
+                                            title="Test sound"
+                                        >
+                                            ▶️
+                                        </button>
+                                    )}
+                                    {formData.customSound && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-danger btn-icon"
+                                            onClick={() => handleChange('customSound', null)}
+                                            title="Remove sound"
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
+                                </div>
+                                {!formData.customSound && settings.defaultSound && (
+                                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' }}>
+                                        Default sound will be used if no custom sound is set
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="modal-actions">
+                                <button 
+                                    type="button" 
+                                    className="btn btn-secondary"
+                                    onClick={onClose}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    className="btn btn-primary"
+                                >
+                                    {task ? 'Update Task' : 'Add Task'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // Copy To Days Modal Component
+        function CopyToManyDaysModal({ currentDay, onCopy, onClose }) {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const otherDays = days.filter(d => d !== currentDay);
+            const [selectedDays, setSelectedDays] = useState([]);
+
+            const toggleDay = (day) => {
+                if (selectedDays.includes(day)) {
+                    setSelectedDays(selectedDays.filter(d => d !== day));
+                } else {
+                    setSelectedDays([...selectedDays, day]);
+                }
+            };
+
+            const selectAll = () => {
+                setSelectedDays(otherDays);
+            };
+
+            const deselectAll = () => {
+                setSelectedDays([]);
+            };
+
+            const handleCopy = () => {
+                if (selectedDays.length === 0) {
+                    alert('Please select at least one day to copy to');
+                    return;
+                }
+                onCopy(selectedDays);
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-header">
+                            Copy {currentDay.charAt(0).toUpperCase() + currentDay.slice(1)}'s Schedule
+                        </h2>
+                        
+                        <div style={{ marginBottom: '20px', color: 'var(--text-secondary)' }}>
+                            Select which days you want to copy this schedule to:
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                            <button 
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={selectAll}
+                            >
+                                Select All
+                            </button>
+                            <button 
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={deselectAll}
+                            >
+                                Deselect All
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'grid', gap: '12px', marginBottom: '24px' }}>
+                            {otherDays.map(day => (
+                                <label 
+                                    key={day}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        padding: '16px',
+                                        background: selectedDays.includes(day) ? 'var(--accent)' : 'var(--bg-accent)',
+                                        color: selectedDays.includes(day) ? 'white' : 'var(--text-primary)',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        fontWeight: '500'
+                                    }}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedDays.includes(day)}
+                                        onChange={() => toggleDay(day)}
+                                        style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                    />
+                                    <span>{day.charAt(0).toUpperCase() + day.slice(1)}</span>
+                                </label>
+                            ))}
+                        </div>
+
+                        <div className="modal-actions">
+                            <button 
+                                type="button" 
+                                className="btn btn-secondary"
+                                onClick={onClose}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="button" 
+                                className="btn btn-primary"
+                                onClick={handleCopy}
+                            >
+                                Copy to Selected Days
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Settings Modal Component
+        function SettingsModal({ settings, setSettings, onClose }) {
+            const fileInputRef = useRef(null);
+
+            const handleDefaultSoundUpload = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    try {
+                        const audioData = await AudioHelper.saveAudio(file, 'default-notification-sound');
+                        setSettings({ ...settings, defaultSound: audioData });
+                    } catch (error) {
+                        alert('Error uploading sound file. File may be too large.');
+                    }
+                }
+            };
+
+            const clearAllData = () => {
+                if (confirm('This will delete ALL your data including templates and progress. Are you sure?')) {
+                    localStorage.clear();
+                    window.location.reload();
+                }
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-header">Settings</h2>
+
+                        <div className="settings-section">
+                            <h3 className="settings-section-title">Notifications</h3>
+                            
+                            <div className="settings-option">
+                                <div className="settings-option-info">
+                                    <div className="settings-option-title">Default Notification Sound</div>
+                                    <div className="settings-option-desc">
+                                        This sound will play for all tasks unless a custom sound is set
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    {settings.defaultSound && (
+                                        <button
+                                            className="btn btn-secondary btn-icon"
+                                            onClick={() => AudioHelper.playAudio(settings.defaultSound)}
+                                            title="Test sound"
+                                        >
+                                            ▶️
+                                        </button>
+                                    )}
+                                    <div className="file-input-wrapper">
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="audio/*"
+                                            className="file-input"
+                                            onChange={handleDefaultSoundUpload}
+                                        />
+                                        <div className="file-label">
+                                            {settings.defaultSound ? '🔔 Change' : '📁 Upload'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {settings.defaultSound && (
+                                <div className="settings-option">
+                                    <div className="settings-option-info">
+                                        <div className="settings-option-title">Remove Default Sound</div>
+                                        <div className="settings-option-desc">
+                                            Clear the default notification sound
+                                        </div>
+                                    </div>
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() => {
+                                            if (confirm('Remove default notification sound?')) {
+                                                setSettings({ ...settings, defaultSound: null });
+                                            }
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="settings-section">
+                            <h3 className="settings-section-title">Data Management</h3>
+                            
+                            <div className="settings-option">
+                                <div className="settings-option-info">
+                                    <div className="settings-option-title">Clear All Data</div>
+                                    <div className="settings-option-desc">
+                                        Delete all tasks, templates, and settings
+                                    </div>
+                                </div>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={clearAllData}
+                                >
+                                    Clear All
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="settings-section">
+                            <h3 className="settings-section-title">About</h3>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.8' }}>
+                                <p><strong>TimeFlow</strong> - Smart Timetable Management</p>
+                                <p>Version 2.0</p>
+                                <p>All data is stored locally on your device.</p>
+                            </div>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button 
+                                className="btn btn-primary"
+                                onClick={onClose}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Weekly Progress View
+        function WeeklyProgressView({ weeklyTemplate, currentTime }) {
+            const getWeekDays = () => {
+                const days = [];
+                const startOfWeek = new Date(currentTime);
+                startOfWeek.setDate(currentTime.getDate() - currentTime.getDay());
+
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(startOfWeek);
+                    day.setDate(startOfWeek.getDate() + i);
+                    days.push(day);
+                }
+                return days;
+            };
+
+            const weekDays = getWeekDays();
+
+            return (
+                <div className="timetable-container">
+                    <h2 className="timetable-title">Weekly Progress</h2>
+                    <div className="weekly-grid">
+                        {weekDays.map(day => {
+                            const dateKey = getDateKey(day);
+                            const dayOfWeek = getDayOfWeek(day);
+                            const templateTasks = weeklyTemplate[dayOfWeek] || [];
+                            
+                            let completed = 0;
+                            templateTasks.forEach(task => {
+                                const completionKey = `${dateKey}-${task.id}`;
+                                if (StorageHelper.load(completionKey, false)) {
+                                    completed++;
+                                }
+                            });
+                            
+                            const progress = templateTasks.length > 0 
+                                ? Math.round((completed / templateTasks.length) * 100)
+                                : 0;
+                            
+                            const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+                            const dayNumber = day.getDate();
+                            const isToday = dateKey === getDateKey(currentTime);
+
+                            return (
+                                <div 
+                                    key={dateKey} 
+                                    className="day-card"
+                                    style={{
+                                        border: isToday ? '2px solid var(--accent)' : 'none'
+                                    }}
+                                >
+                                    <div className="day-name">
+                                        {dayName} {dayNumber}
+                                        {isToday && ' (Today)'}
+                                    </div>
+                                    <div className="day-percentage">{progress}%</div>
+                                    <div className="day-tasks">
+                                        {completed}/{templateTasks.length} tasks
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // Monthly View Component
+        function MonthlyView({ weeklyTemplate, currentTime }) {
+            const getDaysInMonth = () => {
+                const year = currentTime.getFullYear();
+                const month = currentTime.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const days = [];
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const day = new Date(year, month, i);
+                    days.push(day);
+                }
+                return days;
+            };
+
+            const monthDays = getDaysInMonth();
+            const monthName = currentTime.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            return (
+                <div className="timetable-container">
+                    <h2 className="timetable-title">{monthName}</h2>
+                    <div className="monthly-grid">
+                        {monthDays.map(day => {
+                            const dateKey = getDateKey(day);
+                            const dayOfWeek = getDayOfWeek(day);
+                            const templateTasks = weeklyTemplate[dayOfWeek] || [];
+                            
+                            let completed = 0;
+                            templateTasks.forEach(task => {
+                                const completionKey = `${dateKey}-${task.id}`;
+                                if (StorageHelper.load(completionKey, false)) {
+                                    completed++;
+                                }
+                            });
+                            
+                            const progress = templateTasks.length > 0 
+                                ? Math.round((completed / templateTasks.length) * 100)
+                                : 0;
+                            
+                            const isToday = dateKey === getDateKey(currentTime);
+                            const isFuture = day > currentTime;
+
+                            const getPercentageClass = () => {
+                                if (isFuture || templateTasks.length === 0) return '';
+                                if (progress >= 80) return 'percentage-high';
+                                if (progress >= 50) return 'percentage-medium';
+                                return 'percentage-low';
+                            };
+
+                            return (
+                                <div 
+                                    key={dateKey} 
+                                    className="month-day"
+                                    style={{
+                                        border: isToday ? '2px solid var(--accent)' : 'none',
+                                        opacity: isFuture ? 0.5 : 1
+                                    }}
+                                >
+                                    <div className="month-day-number">{day.getDate()}</div>
+                                    <div className={`month-day-percentage ${getPercentageClass()}`}>
+                                        {templateTasks.length > 0 ? `${progress}%` : '-'}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // Widget View Component
+        function WidgetView({ tasks, progress, onToggleTask }) {
+            const incompleteTasks = tasks.filter(t => !t.completed);
+
+            return (
+                <div className="widget-container">
+                    <div className="widget-header">Today's Tasks</div>
+                    {incompleteTasks.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-icon">✅</div>
+                            <div className="empty-text">All tasks completed!</div>
+                        </div>
+                    ) : (
+                        <>
+                            {incompleteTasks.map(task => (
+                                <div 
+                                    key={task.id} 
+                                    className="widget-task"
+                                    onClick={() => onToggleTask(task.id)}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="checkbox"
+                                        checked={false}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            onToggleTask(task.id);
+                                        }}
+                                    />
+                                    <div style={{ flex: 1 }}>
+                                        <div className="task-name">{task.name}</div>
+                                        <div className="task-time">{task.startTime}</div>
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="widget-percentage">{progress}% Complete</div>
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        // Render App
+        ReactDOM.render(<TimeTableApp />, document.getElementById('root'));
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registration successful');
+                        
+                        // Check for updates periodically
+                        setInterval(() => {
+                            registration.update();
+                        }, 60000); // Check every minute
+                    })
+                    .catch((err) => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
